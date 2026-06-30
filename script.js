@@ -108,6 +108,12 @@ loader.load(
 
 		scene.add(model);
 
+		// Reset canvas container translations to 0 and hide it initially (will fade in on scroll)
+		gsap.set(modelContainer, { x: 0, y: 0, opacity: 0 });
+
+		// Run responsive calculations first to scale/position the model properly
+		handleResponsive();
+
 		initialState = {
 			scale: model.scale.clone(),
 			position: model.position.clone(),
@@ -115,12 +121,11 @@ loader.load(
 		};
 
 		initialContainerY = {
-			y: gsap.getProperty(modelContainer, "y"),
-			x: gsap.getProperty(modelContainer, "x")
+			y: 0,
+			x: 0
 		};
 
 		setupGsapAnimations(model);
-		handleResponsive();
 	}
 );
 
@@ -184,7 +189,7 @@ const handleResponsive = () => {
 
 	const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
-	const scale = lerp(lowerDot.scale, upperDot.scale, progress);
+	let scale = lerp(lowerDot.scale, upperDot.scale, progress);
 	const lowerPos = getPos(lowerDot);
 	const upperPos = getPos(upperDot);
 	const posZ = lerp(lowerPos[2], upperPos[2], progress);
@@ -203,9 +208,10 @@ const handleResponsive = () => {
 		const rect = emptyO.getBoundingClientRect();
 		const containerRect = modelContainer.getBoundingClientRect();
 
-		// Calculate center of empty-o as if scroll is at 0
-		const centerX = rect.left + window.scrollX + rect.width / 2;
-		const centerY = rect.top + window.scrollY + rect.height / 2;
+		// Calculate center of empty-o relative to the viewport (since the canvas container is fixed)
+		// We add a tiny offset (5% of the placeholder width) to the right to visually balance the rotated 3D cookie model and prevent overlap with the first O.
+		const centerX = rect.left + rect.width / 2 + (rect.width * 0.05);
+		const centerY = rect.top + rect.height / 2;
 
 		// Normalized device coordinates relative to the canvas
 		const ndcX = ((centerX - containerRect.left) / containerRect.width) * 2 - 1;
@@ -220,6 +226,16 @@ const handleResponsive = () => {
 
 		posX = targetPos.x;
 		posY = targetPos.y;
+
+		// Dynamically calculate scale to match the pixel size of empty-o exactly
+		const fovRad = (camera.fov * Math.PI) / 180;
+		const perpDistance = Math.abs(camera.position.z - posZ);
+		const visibleHeight = 2 * perpDistance * Math.tan(fovRad / 2);
+		const pixelToWorld = visibleHeight / containerRect.height;
+		const targetWorldSize = rect.width * pixelToWorld;
+		// 2.4 is the normalized model size matching targetSize in the loader.
+		// We multiply by 1.38 to compensate for visual thickness and PNG padding of the 2D reference image.
+		scale = (targetWorldSize / 2.4) * 1.38;
 	}
 
 	model.scale.set(scale, scale, scale);
@@ -251,6 +267,17 @@ const onResize = debounce(() => {
 
 window.addEventListener("resize", onResize);
 
+// Trigger layout calculation when assets and web fonts are fully loaded
+window.addEventListener("load", () => {
+	handleResponsive();
+});
+
+if (document.fonts) {
+	document.fonts.ready.then(() => {
+		handleResponsive();
+	});
+}
+
 // Site GSAP Animations
 
 const setupGsapAnimations = (model) => {
@@ -278,7 +305,9 @@ const setupGsapAnimations = (model) => {
 		}
 	});
 
-	timeline.to(model.rotation, { y: Math.PI * 2.5, duration: 1 });
+	timeline.to(model.rotation, { y: Math.PI * 2.5, duration: 1 })
+		.to(".cookie-placeholder-img", { opacity: 0, duration: 0.15, ease: "power1.inOut" }, 0)
+		.to(modelContainer, { opacity: 1, duration: 0.15, ease: "power1.inOut" }, 0);
 
 	// Transition Section Animations
 

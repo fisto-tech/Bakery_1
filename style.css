@@ -372,7 +372,6 @@ body.menu-open .header {
 	justify-content: center;
 	width: 100%;
 	height: 100%;
-	aspect-ratio: 1;
 }
 
 .donut {
@@ -380,6 +379,7 @@ body.menu-open .header {
 	width: 100%;
 	height: 100%;
 	transform: translate(-60px, -30px);
+	opacity: 0; /* Hidden on load, GSAP will fade in on scroll */
 }
 
 /* Return Button */
@@ -449,53 +449,38 @@ body.menu-open .header {
 	transform: rotate(150deg);
 }
 
-.cookie-o-container {
-	position: relative;
+.cookie-o-container,
+.empty-o {
 	display: inline-block;
+	width: 14rem;
+	height: auto;
 	vertical-align: middle;
+	position: relative;
+}
+
+.cookie-o-container {
 	z-index: 1;
 }
 
+.empty-o {
+	z-index: 2;
+}
+
 .cookie-o-container .cookie-o-img {
-	height: 0.96em;
-	width: auto;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
 	transition: opacity 0.3s ease-in-out;
 	margin: 0;
 }
 
-.cookie-o-container .cookie-state-1 {
-	position: relative;
-	display: block;
-}
-
-.cookie-o-container .cookie-state-2,
-.cookie-o-container .cookie-state-3 {
-	position: absolute;
-	top: 0;
-	left: 0;
+.cookie-placeholder-img {
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
-	object-position: center;
-}
-
-.cookie-state-1 {
-	opacity: 1;
-}
-
-.cookie-state-2 {
-	opacity: 0;
-}
-
-.cookie-state-3 {
-	opacity: 0;
-}
-
-.empty-o {
-	display: inline-block;
-	width: 0.8em;
-	position: relative;
-	z-index: 2;
+	display: block;
+	margin: 0;
 }
 
 .hero .container {
@@ -530,7 +515,7 @@ body.menu-open .header {
 	margin: 0;
 	width: 100%;
 	font-family: "Montserrat", sans-serif;
-	font-size: clamp(1rem, 30vw, 17rem);
+	font-size: 17rem;
 	line-height: 1;
 	font-weight: 900;
 	pointer-events: none;
@@ -541,13 +526,42 @@ body.menu-open .header {
 	z-index: 101;
 }
 
-.hero__heading>span:first-child {
-	position: relative;
-	z-index: 3;
+@media screen and (max-width: 1300px) {
+	.hero__heading {
+		font-size: 14.5rem;
+	}
+}
+@media screen and (max-width: 991px) {
+	.hero__heading {
+		font-size: 11rem;
+	}
+	.cookie-o-container,
+	.empty-o {
+		width: 12rem;
+	}
+}
+@media screen and (max-width: 768px) {
+	.hero__heading {
+		font-size: 9rem;
+	}
+	.cookie-o-container,
+	.empty-o {
+		width: 12rem;
+	}
+}
+@media screen and (max-width: 600px) {
+	.hero__heading {
+		font-size: 7rem;
+	}
+	.cookie-o-container,
+	.empty-o {
+		width: 12rem;
+	}
 }
 
 .hero__heading>span:first-child {
-	font-size: 1.1em;
+	position: relative;
+	z-index: 3;
 }
 
 .hero__heading>span:last-child {
@@ -557,7 +571,7 @@ body.menu-open .header {
 	letter-spacing: -0.02em;
 }
 
-.hero__heading span {
+.hero__heading > span:not(.cookie-o-container):not(.empty-o) {
 	background: linear-gradient(to bottom, #723a20, #2c1308);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -572,7 +586,7 @@ body.menu-open .header {
 	align-self: flex-end;
 	margin: 0;
 	font-family: "Comforter", sans-serif;
-	font-size: clamp(1.5rem, 8vw, 8rem);
+	font-size: clamp(1.5rem, 6.5vw, 6.5rem);
 	font-weight: 400;
 	color: #cf9e7c;
 	z-index: 102;
@@ -584,7 +598,7 @@ body.menu-open .header {
 	margin: 45px 0 0;
 	max-width: 720px;
 	font-family: "Outfit", sans-serif;
-	font-size: clamp(0.5rem, 1vw, 1.25rem);
+	font-size: clamp(0.5rem, 1vw, 1.1rem);
 	line-height: 1.4;
 	font-weight: 500;
 	color: #3d2314;
@@ -2228,8 +2242,10 @@ body.menu-open .header {
 	}
 
 	.hero__heading {
-		font-size: clamp(3rem, 15vw, 6rem);
+		font-size: clamp(3.5rem, 20vw, 8rem);
 	}
+
+
 
 	.steps__card,
 	.steps__card-first,
