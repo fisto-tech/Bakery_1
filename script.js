@@ -126,6 +126,36 @@ loader.load(
 		};
 
 		setupGsapAnimations(model);
+
+		// Hide preloader once model is ready
+		const preloader = document.querySelector('.preloader');
+		if (preloader) {
+			preloader.style.opacity = '0';
+			setTimeout(() => {
+				preloader.style.display = 'none';
+			}, 500);
+		}
+	},
+	(xhr) => {
+		// onProgress callback to show dynamic loading progress
+		if (xhr.lengthComputable || (xhr.total && xhr.total > 0)) {
+			const percent = Math.round((xhr.loaded / xhr.total) * 100);
+			const preloaderText = document.querySelector('.preloader__text');
+			if (preloaderText) {
+				preloaderText.textContent = `Loading ${percent}%`;
+			}
+		}
+	},
+	(error) => {
+		console.error("Error loading model:", error);
+		// Hide preloader anyway if model fails to load so page is usable
+		const preloader = document.querySelector('.preloader');
+		if (preloader) {
+			preloader.style.opacity = '0';
+			setTimeout(() => {
+				preloader.style.display = 'none';
+			}, 500);
+		}
 	}
 );
 
@@ -765,16 +795,16 @@ window.addEventListener("mouseup", () => {
 // Main Site Functional
 
 document.addEventListener("DOMContentLoaded", () => {
-	// Preloader
+	// Preloader (fallback/safety to ensure it closes after 10s if loader hangs)
 	setTimeout(() => {
 		const preloader = document.querySelector('.preloader');
-		if (preloader) {
+		if (preloader && preloader.style.display !== 'none') {
 			preloader.style.opacity = '0';
 			setTimeout(() => {
 				preloader.style.display = 'none';
 			}, 500);
 		}
-	}, 1000);
+	}, 10000);
 
 	const header = document.querySelector(".header");
 	const openMenu = document.querySelector("#openMenu");
